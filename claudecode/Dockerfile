@@ -205,6 +205,7 @@ CMD ["/bin/bash", "-c", "\
   if [ ! -L /root/.claude ]; then rm -rf /root/.claude; ln -s $PERSIST_DIR /root/.claude; fi && \
   if [ ! -L /root/.config/claude-code ]; then rm -rf /root/.config/claude-code; ln -s $PERSIST_DIR/config /root/.config/claude-code; fi && \
   if [ ! -L /root/.claude.json ]; then touch $PERSIST_DIR/.claude.json; rm -f /root/.claude.json; ln -s $PERSIST_DIR/.claude.json /root/.claude.json; fi && \
+  if ! jq empty /root/.claude.json >/dev/null 2>&1; then echo '{}' > /root/.claude.json; fi && \
   FONT_SIZE=$(jq -r '.terminal_font_size // 14' /data/options.json) && \
   THEME=$(jq -r '.terminal_theme // \"dark\"' /data/options.json) && \
   SESSION_PERSIST=$(jq -r '.session_persistence // true' /data/options.json) && \
@@ -234,7 +235,7 @@ CMD ["/bin/bash", "-c", "\
     claude mcp add-json homeassistant_legacy '{\"type\":\"stdio\",\"command\":\"hass-mcp\",\"env\":{\"HA_URL\":\"http://supervisor/core\",\"HA_TOKEN\":\"${SUPERVISOR_TOKEN}\"}}' -s user && \
     SETTINGS_FILE=/root/.claude/settings.json && \
     ALLOWED_TOOLS='[\"mcp__homeassistant__GetDateTime\",\"mcp__homeassistant__GetLiveContext\",\"mcp__homeassistant__todo_get_items\",\"mcp__homeassistant_legacy__get_version\",\"mcp__homeassistant_legacy__get_entity\",\"mcp__homeassistant_legacy__list_entities\",\"mcp__homeassistant_legacy__search_entities_tool\",\"mcp__homeassistant_legacy__domain_summary_tool\",\"mcp__homeassistant_legacy__list_automations\",\"mcp__homeassistant_legacy__get_history\",\"mcp__homeassistant_legacy__get_error_log\",\"Read(/homeassistant/**)\",\"Read(/config/**)\",\"Read(/share/**)\",\"Read(/media/**)\",\"Glob(/homeassistant/**)\",\"Glob(/config/**)\",\"Grep(/homeassistant/**)\",\"Grep(/config/**)\"]' && \
-    jq --argjson tools \"$ALLOWED_TOOLS\" '.permissions.allow = ($tools + (.permissions.allow // []) | unique)' $SETTINGS_FILE > /tmp/settings.tmp && mv /tmp/settings.tmp $SETTINGS_FILE && \
+    if [ -f \"$SETTINGS_FILE\" ]; then jq --argjson tools \"$ALLOWED_TOOLS\" '.permissions.allow = ($tools + (.permissions.allow // []) | unique)' $SETTINGS_FILE > /tmp/settings.tmp && mv /tmp/settings.tmp $SETTINGS_FILE; else echo '[WARN] Claude settings.json not found yet; skipping MCP pre-authorization'; fi && \
     echo '[INFO] MCP configured: homeassistant (HTTP primary) + homeassistant_legacy (stdio fallback)'; \
     echo '[INFO] Pre-authorized read-mostly MCP tools'; \
   else \

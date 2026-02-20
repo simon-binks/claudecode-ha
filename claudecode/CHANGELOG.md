@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.2.65] - 2026-02-20
+
+### Fixed
+- Fixed startup `ConfigurationError` caused by invalid `/root/.claude.json` by auto-initializing/resetting it to valid JSON (`{}`) when needed.
+- Fixed startup warning/failure path when `/root/.claude/settings.json` does not yet exist by skipping MCP pre-authorization instead of hard-failing `jq`.
+
 ## [1.2.64] - 2026-02-20
 
 ### Changed
