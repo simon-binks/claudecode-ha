@@ -114,18 +114,10 @@ export TERM=xterm-256color
 export LANG=C.UTF-8
 PS1='\[\033[1;36m\]claude-code\[\033[0m\]:\[\033[1;34m\]\w\[\033[0m\]\$ '
 
-# Function to update MCP token before starting Claude
-update_mcp_token() {
-  local SETTINGS_FILE=/root/.claude/settings.json
-  if [ -f "$SETTINGS_FILE" ] && [ -n "$SUPERVISOR_TOKEN" ]; then
-    jq ".mcpServers.homeassistant.env.HASS_TOKEN = \"$SUPERVISOR_TOKEN\"" "$SETTINGS_FILE" > /tmp/settings.tmp 2>/dev/null && mv /tmp/settings.tmp "$SETTINGS_FILE"
-  fi
-}
-
 # Aliases
 alias ll='ls -la'
-alias c='update_mcp_token && claude'
-alias cc='update_mcp_token && claude --continue'
+alias c='claude'
+alias cc='claude --continue'
 alias ha-config='cd /homeassistant'
 alias ha-logs='cat /homeassistant/home-assistant.log 2>/dev/null || echo "Log not found"'
 EOF
@@ -174,7 +166,8 @@ CMD ["/bin/bash", "-c", "\
     '' \
     '## Home Assistant Integration' \
     '' \
-    'Use the \\`homeassistant\\` MCP server to query entities and call services.' \
+    'Use the \\`homeassistant\\` MCP server (HTTP primary) for normal control/actions.' \
+    'Use \\`homeassistant_legacy\\` only when you need tools not available on the primary server.' \
     '' \
     '## Reading Home Assistant Logs' \
     '' \
@@ -234,14 +227,16 @@ CMD ["/bin/bash", "-c", "\
     npm update -g @anthropic-ai/claude-code 2>/dev/null || echo '[WARN] Update check failed, continuing...'; \
   fi && \
   claude mcp remove homeassistant -s user 2>/dev/null || true && \
+  claude mcp remove homeassistant_legacy -s user 2>/dev/null || true && \
   claude mcp remove playwright -s user 2>/dev/null || true && \
   if [ \"$ENABLE_MCP\" = \"true\" ]; then \
-    claude mcp add-json homeassistant '{\"command\":\"hass-mcp\"}' -s user && \
+    claude mcp add-json homeassistant '{\"type\":\"http\",\"url\":\"http://supervisor/core/api/mcp\",\"headers\":{\"Authorization\":\"Bearer ${SUPERVISOR_TOKEN}\"}}' -s user && \
+    claude mcp add-json homeassistant_legacy '{\"type\":\"stdio\",\"command\":\"hass-mcp\",\"env\":{\"HA_URL\":\"http://supervisor/core\",\"HA_TOKEN\":\"${SUPERVISOR_TOKEN}\"}}' -s user && \
     SETTINGS_FILE=/root/.claude/settings.json && \
-    ALLOWED_TOOLS='[\"mcp__homeassistant__get_version\",\"mcp__homeassistant__get_entity\",\"mcp__homeassistant__list_entities\",\"mcp__homeassistant__search_entities_tool\",\"mcp__homeassistant__domain_summary_tool\",\"mcp__homeassistant__list_automations\",\"mcp__homeassistant__get_history\",\"mcp__homeassistant__get_error_log\",\"Read(/homeassistant/**)\",\"Read(/config/**)\",\"Read(/share/**)\",\"Read(/media/**)\",\"Glob(/homeassistant/**)\",\"Glob(/config/**)\",\"Grep(/homeassistant/**)\",\"Grep(/config/**)\"]' && \
+    ALLOWED_TOOLS='[\"mcp__homeassistant__GetDateTime\",\"mcp__homeassistant__GetLiveContext\",\"mcp__homeassistant__todo_get_items\",\"mcp__homeassistant_legacy__get_version\",\"mcp__homeassistant_legacy__get_entity\",\"mcp__homeassistant_legacy__list_entities\",\"mcp__homeassistant_legacy__search_entities_tool\",\"mcp__homeassistant_legacy__domain_summary_tool\",\"mcp__homeassistant_legacy__list_automations\",\"mcp__homeassistant_legacy__get_history\",\"mcp__homeassistant_legacy__get_error_log\",\"Read(/homeassistant/**)\",\"Read(/config/**)\",\"Read(/share/**)\",\"Read(/media/**)\",\"Glob(/homeassistant/**)\",\"Glob(/config/**)\",\"Grep(/homeassistant/**)\",\"Grep(/config/**)\"]' && \
     jq --argjson tools \"$ALLOWED_TOOLS\" '.permissions.allow = ($tools + (.permissions.allow // []) | unique)' $SETTINGS_FILE > /tmp/settings.tmp && mv /tmp/settings.tmp $SETTINGS_FILE && \
-    echo '[INFO] MCP configured with Home Assistant integration'; \
-    echo '[INFO] Pre-authorized read-only MCP tools'; \
+    echo '[INFO] MCP configured: homeassistant (HTTP primary) + homeassistant_legacy (stdio fallback)'; \
+    echo '[INFO] Pre-authorized read-mostly MCP tools'; \
   else \
     echo '[INFO] MCP disabled'; \
   fi && \

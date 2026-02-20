@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.2.63] - 2026-02-20
+
+### Changed
+- Switched Home Assistant MCP to dual-server mode:
+  - `homeassistant`: HTTP MCP primary at `http://supervisor/core/api/mcp` with Supervisor bearer auth
+  - `homeassistant_legacy`: `hass-mcp` stdio fallback for legacy/extra tools
+- Removed startup alias token-rewrite helper (no longer needed with generated MCP config each startup).
+- Updated pre-authorized MCP tool list to match dual-server naming.
+- Updated add-on README wording to describe primary HTTP MCP with legacy fallback.
+
 ## [1.2.62] - 2026-01-26
 
 ### Fixed

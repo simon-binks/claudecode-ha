@@ -20,7 +20,7 @@ claude "Why isn't my motion sensor automation working?"
 
 - **Web Terminal**: Access Claude Code through a browser-based terminal
 - **Config Access**: Read and write Home Assistant configuration files
-- **hass-mcp Integration**: Direct control of HA entities and services
+- **Dual MCP Integration**: Home Assistant HTTP MCP as primary, with `hass-mcp` fallback for extra legacy tools
 - **Session Persistence**: Optional tmux integration to preserve sessions across page refreshes
 - **Customizable Theme**: Choose between dark and light terminal themes
 - **Multi-Architecture**: Supports amd64, aarch64, armv7, armhf, and i386
@@ -59,7 +59,7 @@ Once authenticated, Claude Code is ready to help with:
 
 ### Home Assistant Integration
 
-With hass-mcp enabled, Claude can:
+With MCP enabled, Claude can:
 
 - Query entity states: "What's the temperature in the living room?"
 - Control devices: "Turn off all lights in the bedroom"
@@ -184,7 +184,7 @@ Claude Code manages its own authentication. If you have issues:
 2. Follow the prompts to log in or enter your API key
 3. Credentials are saved automatically for future sessions
 
-### hass-mcp not working
+### MCP not working
 
 1. Verify `enable_mcp` is true in configuration
 2. Check add-on logs for connection errors
@@ -210,5 +210,5 @@ After changing configuration:
 
 ## Support
 
-- [GitHub Issues](https://github.com/robsonfelix/robsonfelix-hass-addons/issues)
+- [GitHub Issues](https://github.com/simon-binks/claudecode-ha/issues)
 - [Home Assistant Community](https://community.home-assistant.io/)
