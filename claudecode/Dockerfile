@@ -136,12 +136,12 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
     CMD curl -sf http://localhost:7681/ || exit 1
 
 # Startup script that reads config and persists Claude auth
-# Use /homeassistant/.claudecode which is always persistent
+# Use /homeassistant/.claudecode-ha for fork-isolated persistence
 ENTRYPOINT []
 CMD ["/bin/bash", "-c", "\
   export HA_TOKEN=\"$SUPERVISOR_TOKEN\" && \
   export HA_URL=\"http://supervisor/core\" && \
-  PERSIST_DIR=/homeassistant/.claudecode && \
+  PERSIST_DIR=/homeassistant/.claudecode-ha && \
   mkdir -p $PERSIST_DIR/config /root/.config && \
   printf '%s\n' \
     '# Claude Code - Home Assistant Add-on' \

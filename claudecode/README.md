@@ -168,6 +168,10 @@ Since tmux captures mouse events, copy/paste works differently:
 ### Authentication
 - **No API keys in add-on config**: Claude Code handles authentication itself
 - Credentials are stored securely in Claude Code's own directory (`~/.claude/`)
+
+### Fork isolation
+- This fork uses add-on slug `claudecodeha` and stores persistent data under `/homeassistant/.claudecode-ha`.
+- This avoids collisions with the original add-on (`claudecode`, `/homeassistant/.claudecode`) when both are installed.
 - This is more secure than storing keys in Home Assistant's configuration
 
 ### Container Security

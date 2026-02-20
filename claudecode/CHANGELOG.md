@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.2.64] - 2026-02-20
+
+### Changed
+- Fork isolation: changed add-on slug from `claudecode` to `claudecodeha` to avoid conflicts with the original add-on.
+- Fork isolation: changed persistent Claude data directory from `/homeassistant/.claudecode` to `/homeassistant/.claudecode-ha`.
+- Updated add-on display name/title to `Claude Code HA` for clearer differentiation in Home Assistant UI.
+
 ## [1.2.63] - 2026-02-20
 
 ### Changed
